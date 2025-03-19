@@ -9,10 +9,7 @@
     "storage",
     "downloads",
     "cookies",
-    "webRequest",
-    "webRequestBlocking",
-    "http://*/*",
-    "https://*/*"
+    "webRequest"
   ],
   "host_permissions": [
     "https://exam.sanand.workers.dev/*"
