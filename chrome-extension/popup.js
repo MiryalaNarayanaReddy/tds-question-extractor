@@ -32,35 +32,37 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
     document.body.removeChild(a);
 });
 
-// Function to extract text content recursively (No HTML tags)
-function getTextRecursively(element) {
-    let text = "";
-    element.childNodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            text += node.textContent.trim() + " "; // Extract text
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            text += getTextRecursively(node) + " "; // Recursive extraction
-        }
-    });
-    return text.replace(/\s+/g, " ").trim(); // Clean extra spaces
-}
-
-// Extract questions from the webpage
-function extractDataFromContent() {
+async function extractDataFromContent() {
     let questionCards = document.querySelectorAll("div.card.my-5[data-question]");
     let extractedData = {};
 
     questionCards.forEach(card => {
         let questionId = card.getAttribute("data-question");
         let cardBodies = card.querySelectorAll(".card-body");
+        let cardBody = cardBodies[cardBodies.length - 1];
 
-        let fullText = [];
-        for (let body of cardBodies) {
-            let textContent = extractTextRecursively(body); // Extract clean text
-            fullText.push(textContent);
+        if (cardBody) {
+            extractedData[questionId] = {
+                "question": extractTextRecursively(cardBody),
+                "answer": ""
+            };
         }
-        extractedData[questionId] = fullText.join("\n\n");
     });
+
+    try {
+        let answers = await getAnswers();
+        let qa = answers["data"][0]["result"]["answers"];
+        console.log("Received Answers:", qa);
+
+        Object.keys(qa).forEach(key => {
+            if (extractedData[key]) {
+                extractedData[key]["answer"] = qa[key];
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching answers:", error);
+    }
 
     return extractedData;
 }
